@@ -1,0 +1,296 @@
+Atenção: Este é um prompt específico com instruções detalhadas para o back-end e diretrizes criativas para o front-end. Para o back-end, siga as instruções exatamente como descritas, sem improvisar. Para o front-end, você tem liberdade criativa dentro das diretrizes fornecidas — explore ideias modernas e intuitivas, mas respeite os limites estabelecidos. Pare para feedback após cada passo.
+
+Contexto do Projeto
+Você está trabalhando no "Preço Lucrativo com IA", um sistema para pequenos varejistas e prestadores de serviços (faturamento entre R$ 100 mil e R$ 1 milhão/ano). O MVP já tem:
+
+Back-end (FastAPI) com upload de CSVs e análises de "Lucro Escondido" e "Mentor de Preços".
+Front-end básico (HTML/JS com Chart.js) exibindo gráficos.
+Agora, você vai:
+
+Adicionar um banco de dados SQLite no back-end para armazenar histórico de dados.
+Evoluir o front-end com um design moderno, simples e consistente, incorporando o histórico do banco.
+Passo 1: Implementar Banco de Dados no Back-end
+Duração: 7 dias (Semana 1, Dias 1-5; Semana 2, Dias 1-2).
+Objetivo: Adicionar um banco SQLite para armazenar dados de CSVs, com endpoint para histórico.
+Ferramentas:
+SQLite (integrado ao Python).
+SQLAlchemy (instale via pip install sqlalchemy).
+Instruções Específicas (Sem Criatividade Aqui):
+
+No preco-lucrativo-mvp/, atualize requirements.txt:
+text
+
+
+fastapi
+uvicorn
+pandas
+beautifulsoup4
+requests
+sqlalchemy
+Execute pip install -r requirements.txt.
+
+
+No backend, crie database.py:
+python
+
+
+from sqlalchemy import create_engine, Column, Integer, String, Float
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+
+engine = create_engine("sqlite:///data.db")
+Base = declarative_base()
+
+class Sale(Base):
+    __tablename__ = "sales"
+    id = Column(Integer, primary_key=True)
+    produto = Column(String)
+    preco = Column(Float)
+    quantidade = Column(Integer)
+    custo = Column(Float)
+
+Base.metadata.create_all(engine)
+Session = sessionmaker(bind=engine)
+Edite data_handler.py:
+python
+
+
+import pandas as pd
+from fastapi import UploadFile
+from database import Session, Sale
+
+def process_csv(file: UploadFile):
+    df = pd.read_csv(file.file)
+    required_columns = ["produto", "preco", "quantidade", "custo"]
+    if not all(col in df.columns for col in required_columns):
+        raise ValueError("CSV deve conter: produto, preco, quantidade, custo")
+    
+    session = Session()
+    for _, row in df.iterrows():
+        sale = Sale(
+            produto=row["produto"],
+            preco=row["preco"],
+            quantidade=row["quantidade"],
+            custo=row["custo"]
+        )
+        session.add(sale)
+    session.commit()
+    session.close()
+    return df.to_dict(orient="records")
+Edite main.py:
+python
+
+
+from fastapi import FastAPI, UploadFile, File
+from data_handler import process_csv
+from profit_analyzer import analyze_hidden_profit
+from price_mentor import suggest_prices
+from database import Session, Sale
+
+app = FastAPI()
+
+@app.get("/")
+def read_root():
+    return {"message": "Preço Lucrativo com IA - MVP"}
+
+@app.post("/upload-csv/")
+async def upload_csv(file: UploadFile = File(...)):
+    try:
+        data = process_csv(file)
+        df = pd.DataFrame(data)
+        hidden_profit = analyze_hidden_profit(df)
+        competitor_prices = {"Camisa": 60, "Calça": 80, "Cinto": 120}
+        price_suggestions = suggest_prices(df, competitor_prices)
+        return {"hidden_profit": hidden_profit, "price_suggestions": price_suggestions}
+    except ValueError as e:
+        return {"error": str(e)}
+
+@app.get("/history/")
+def get_history():
+    session = Session()
+    sales = session.query(Sale).all()
+    session.close()
+    return [{"produto": s.produto, "preco": s.preco, "quantidade": s.quantidade, "custo": s.custo} for s in sales]
+Teste:
+Inicie o back-end: cd backend && uvicorn main:app --reload.
+Envie test1.csv via http://127.0.0.1:8000/upload-csv/ (use Postman).
+Acesse http://127.0.0.1:8000/history/ e confirme que os dados aparecem.
+Verifique que data.db foi criado em backend/.
+Commit: git add . && git commit -m "Banco de dados SQLite implementado".
+Entregável: Back-end com endpoint /history/ funcionando.
+Parada para Feedback: Envie o código, o JSON do /history/, e o data.db ao usuário. Aguarde aprovação.
+
+Passo 2: Evoluir o Front-end com Design Moderno
+Duração: 7 dias (Semana 2, Dias 3-5; Semana 3, Dias 1-4).
+Objetivo: Redesenhar o front-end com uma interface moderna, simples e consistente, integrando o histórico do banco.
+Ferramentas:
+HTML/CSS/JS.
+Chart.js (via CDN: <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>).
+Tailwind CSS (via CDN: <script src="https://cdn.tailwindcss.com"></script>) para estilização rápida e moderna.
+Diretrizes com Liberdade Criativa:
+
+Objetivo Visual: Criar uma interface limpa, profissional e intuitiva que:
+Exiba "Lucro Escondido" e "Mentor de Preços" em gráficos interativos.
+Mostre o histórico de uploads em uma tabela ou cards.
+Use cores modernas (ex.: tons de azul, verde, cinza) e animações sutis.
+Requisitos Obrigatórios:
+Um botão de upload de CSV visível e destacado.
+Dois gráficos (um para "Lucro Escondido", outro para "Mentor de Preços").
+Uma seção para exibir o histórico do endpoint /history/.
+Responsividade para telas pequenas (mobile-friendly).
+Liberdade Criativa:
+Escolha um layout (ex.: sidebar, abas, ou seções empilhadas).
+Adicione animações (ex.: fade-in nos gráficos com CSS ou JS).
+Use ícones ou elementos visuais (ex.: via FontAwesome CDN: <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">).
+Experimente com tipografia e espaçamento para um look moderno.
+Instruções Específicas com Exemplo Inicial:
+
+No frontend, edite index.html:
+html
+
+Pré-visualizar
+
+Recolher
+
+Encapsular
+
+Copiar
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preço Lucrativo com IA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .fade-in { animation: fadeIn 1s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans">
+    <header class="bg-blue-600 text-white p-4 text-center">
+        <h1 class="text-2xl font-bold">Preço Lucrativo com IA</h1>
+    </header>
+    <main class="max-w-5xl mx-auto p-4">
+        <section class="mb-6">
+            <label for="csv-upload" class="block text-lg font-semibold mb-2">Carregar Dados (CSV)</label>
+            <input type="file" id="csv-upload" accept=".csv" class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none p-2">
+        </section>
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-white p-4 rounded-lg shadow fade-in">
+                <h2 class="text-xl font-semibold mb-2">Lucro Escondido</h2>
+                <canvas id="hidden-profit-chart"></canvas>
+            </div>
+            <div class="bg-white p-4 rounded-lg shadow fade-in">
+                <h2 class="text-xl font-semibold mb-2">Mentor de Preços</h2>
+                <canvas id="price-suggestions-chart"></canvas>
+            </div>
+        </section>
+        <section class="mt-6 bg-white p-4 rounded-lg shadow fade-in">
+            <h2 class="text-xl font-semibold mb-2">Histórico de Uploads</h2>
+            <div id="history-table" class="overflow-x-auto"></div>
+        </section>
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
+Edite script.js:
+javascript
+
+Recolher
+
+Encapsular
+
+Copiar
+document.getElementById("csv-upload").addEventListener("change", async (event) => {
+    const file = event.target.files[0];
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await fetch("http://127.0.0.1:8000/upload-csv/", {
+        method: "POST",
+        body: formData
+    });
+    const result = await response.json();
+
+    if (result.error) {
+        alert(result.error);
+        return;
+    }
+
+    // Gráfico de Lucro Escondido
+    const profitLabels = result.hidden_profit.map(item => item.produto);
+    const margins = result.hidden_profit.map(item => item.margem);
+    const profitCtx = document.getElementById("hidden-profit-chart").getContext("2d");
+    new Chart(profitCtx, {
+        type: "bar",
+        data: {
+            labels: profitLabels,
+            datasets: [{ label: "Margem (%)", data: margins, backgroundColor: "rgba(34, 197, 94, 0.5)", borderColor: "rgba(34, 197, 94, 1)", borderWidth: 1 }]
+        },
+        options: { scales: { y: { beginAtZero: true } } }
+    });
+
+    // Gráfico de Mentor de Preços
+    const priceLabels = result.price_suggestions.map(item => item.produto);
+    const prices = result.price_suggestions.map(item => item.preco_sugerido);
+    const priceCtx = document.getElementById("price-suggestions-chart").getContext("2d");
+    new Chart(priceCtx, {
+        type: "bar",
+        data: {
+            labels: priceLabels,
+            datasets: [{ label: "Preço Sugerido (R$)", data: prices, backgroundColor: "rgba(59, 130, 246, 0.5)", borderColor: "rgba(59, 130, 246, 1)", borderWidth: 1 }]
+        },
+        options: { scales: { y: { beginAtZero: true } } }
+    });
+
+    // Carregar Histórico
+    loadHistory();
+});
+
+async function loadHistory() {
+    const response = await fetch("http://127.0.0.1:8000/history/");
+    const history = await response.json();
+    const tableDiv = document.getElementById("history-table");
+    tableDiv.innerHTML = `
+        <table class="min-w-full bg-white border">
+            <thead>
+                <tr class="bg-gray-200">
+                    <th class="py-2 px-4 border">Produto</th>
+                    <th class="py-2 px-4 border">Preço (R$)</th>
+                    <th class="py-2 px-4 border">Quantidade</th>
+                    <th class="py-2 px-4 border">Custo (R$)</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${history.map(item => `
+                    <tr class="hover:bg-gray-100">
+                        <td class="py-2 px-4 border">${item.produto}</td>
+                        <td class="py-2 px-4 border">${item.preco.toFixed(2)}</td>
+                        <td class="py-2 px-4 border">${item.quantidade}</td>
+                        <td class="py-2 px-4 border">${item.custo.toFixed(2)}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+}
+
+// Carregar histórico ao abrir a página
+loadHistory();
+Sugestões Criativas para Explorar:
+
+Layout: Experimente uma sidebar à esquerda com ícones (ex.: upload, histórico) ou abas para alternar entre gráficos e histórico.
+Animações: Adicione um loader giratório durante o upload (ex.: <div id="loader" class="hidden animate-spin"> com Tailwind).
+Cores: Use gradientes (ex.: bg-gradient-to-r from-blue-500 to-green-500) ou temas escuros opcionais.
+Interatividade: Permita clicar nos gráficos para ver detalhes (ex.: tooltips com Chart.js) ou filtrar o histórico por produto.
+Teste:
+
+Inicie o back-end: cd backend && uvicorn main:app --reload.
+Abra frontend/index.html no navegador.
+Faça upload de test1.csv e confirme que gráficos e histórico aparecem.
+Verifique responsividade redimensionando a janela.
+Entregável: Front-end redesenhado com histórico integrado.
+Parada para Feedback: Envie o código do index.html, script.js, e capturas de tela da interface ao usuário. Aguarde.

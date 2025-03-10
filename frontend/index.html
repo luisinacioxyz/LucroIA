@@ -3,8 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <title>Preço Lucrativo com IA</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        canvas { max-width: 600px; margin: 20px auto; }
+        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+        .upload-section { margin: 30px 0; padding: 20px; border: 1px solid #ddd; border-radius: 5px; }
+        .results-section { margin-top: 30px; }
+    </style>
 </head>
 <body>
-    <h1>Preço Lucrativo com IA - MVP</h1>
+    <div class="container">
+        <h1>Preço Lucrativo com IA</h1>
+        
+        <div class="upload-section">
+            <h2>Upload de Dados</h2>
+            <p>Faça upload de um arquivo CSV com colunas: produto, preco, quantidade, custo</p>
+            <input type="file" id="csv-upload" accept=".csv">
+            <button id="upload-btn">Analisar Dados</button>
+        </div>
+        
+        <div class="results-section">
+            <h2>Lucro Escondido</h2>
+            <canvas id="hidden-profit-chart"></canvas>
+            
+            <h2>Sugestões de Preços</h2>
+            <canvas id="price-suggestions-chart"></canvas>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="script.js"></script>
 </body>
 </html> 

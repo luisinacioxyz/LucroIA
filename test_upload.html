@@ -1,1 +1,15 @@
- 
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Teste de Upload CSV</title>
+</head>
+<body>
+    <h1>Teste de Upload CSV</h1>
+    <form action="http://127.0.0.1:8000/upload-csv/" method="post" enctype="multipart/form-data">
+        <input type="file" name="file" accept=".csv">
+        <button type="submit">Enviar</button>
+    </form>
+    <div id="result"></div>
+</body>
+</html> 

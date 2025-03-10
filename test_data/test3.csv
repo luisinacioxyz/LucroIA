@@ -1,1 +1,8 @@
- 
+produto,preco,quantidade,custo
+Corte de Cabelo,50,30,20
+Manicure,40,25,15
+Pedicure,45,20,18
+Massagem,100,10,40
+Limpeza de Pele,80,15,30
+Depilação,60,18,25
+Maquiagem,70,12,30 
