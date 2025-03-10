@@ -67,4 +67,36 @@ def get_history():
     session = Session()
     sales = session.query(Sale).all()
     session.close()
-    return [{"produto": s.produto, "preco": s.preco, "quantidade": s.quantidade, "custo": s.custo} for s in sales] 
+    return [{"produto": s.produto, "preco": s.preco, "quantidade": s.quantidade, "custo": s.custo} for s in sales]
+
+@app.get("/metrics/")
+def get_metrics():
+    session = Session()
+    sales = session.query(Sale).all()
+    if not sales:
+        session.close()
+        return {"error": "Nenhum dado disponível"}
+    
+    df = pd.DataFrame([{
+        "produto": s.produto,
+        "preco": s.preco,
+        "quantidade": s.quantidade,
+        "custo": s.custo
+    } for s in sales])
+    session.close()
+
+    # Cálculos das métricas
+    df["lucro"] = (df["preco"] * df["quantidade"]) - (df["custo"] * df["quantidade"])
+    df["margem"] = df["lucro"] / (df["preco"] * df["quantidade"]) * 100
+
+    total_revenue = (df["preco"] * df["quantidade"]).sum()
+    total_profit = df["lucro"].sum()
+    avg_margin = df["margem"].mean()
+    top_product = df.loc[df["lucro"].idxmax()]["produto"] if not df.empty else "N/A"
+
+    return {
+        "total_revenue": round(total_revenue, 2),
+        "total_profit": round(total_profit, 2),
+        "average_margin": round(avg_margin, 2),
+        "top_product": top_product
+    } 

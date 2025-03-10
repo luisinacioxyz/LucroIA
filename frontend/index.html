@@ -5,110 +5,184 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Preço Lucrativo com IA</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .fade-in { animation: fadeIn 1s ease-in; }
+        .fade-in { animation: fadeIn 0.5s ease-in; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .card-hover:hover { transform: translateY(-5px); transition: transform 0.3s ease; }
+        
+        .metric-card {
+            transition: all 0.3s ease;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .counter {
+            display: inline-block;
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
     </style>
 </head>
-<body class="bg-gray-50 font-sans min-h-screen">
-    <header class="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-6 shadow-md">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <h1 class="text-3xl font-bold">Preço Lucrativo com IA</h1>
-            <div class="hidden md:flex space-x-4">
-                <button id="upload-nav" class="px-4 py-2 rounded-lg bg-white text-blue-700 hover:bg-blue-50 transition">
-                    <i class="fas fa-upload mr-2"></i>Upload
+<body class="bg-gray-50 font-sans">
+    <header class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 text-center shadow-lg">
+        <h1 class="text-3xl font-bold">Preço Lucrativo com IA</h1>
+        <p class="mt-2 text-blue-100">Otimize seus preços e maximize seus lucros</p>
+    </header>
+    
+    <!-- Navigation -->
+    <nav class="bg-blue-600 text-white">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex space-x-4">
+                <button id="dashboard-nav" class="py-3 px-4 rounded-t-lg bg-white text-blue-700 font-medium">
+                    Dashboard
                 </button>
-                <button id="history-nav" class="px-4 py-2 rounded-lg bg-transparent hover:bg-blue-700 transition">
-                    <i class="fas fa-history mr-2"></i>Histórico
+                <button id="upload-nav" class="py-3 px-4 rounded-t-lg bg-transparent hover:bg-blue-500 font-medium">
+                    Upload
+                </button>
+                <button id="history-nav" class="py-3 px-4 rounded-t-lg bg-transparent hover:bg-blue-500 font-medium">
+                    Histórico
                 </button>
             </div>
         </div>
-    </header>
-
-    <main class="max-w-7xl mx-auto p-6">
-        <!-- Upload Section -->
-        <section id="upload-section" class="mb-10 fade-in">
-            <div class="bg-white p-6 rounded-xl shadow-md">
-                <h2 class="text-2xl font-semibold mb-4 text-gray-800 flex items-center">
-                    <i class="fas fa-upload text-blue-600 mr-3"></i>Upload de Dados
-                </h2>
-                <p class="text-gray-600 mb-6">Faça upload de um arquivo CSV com colunas: produto, preco, quantidade, custo</p>
-                
-                <div class="flex flex-col md:flex-row gap-4">
-                    <div class="flex-grow">
-                        <label for="csv-upload" class="block text-sm font-medium text-gray-700 mb-1">Selecione um arquivo CSV</label>
-                        <input type="file" id="csv-upload" accept=".csv" 
-                            class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 
-                            file:rounded-md file:border-0 file:text-sm file:font-semibold
-                            file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100
-                            border border-gray-300 rounded-md cursor-pointer">
+    </nav>
+    
+    <main class="max-w-6xl mx-auto p-6">
+        <!-- Dashboard Section -->
+        <section id="dashboard-section" class="mb-8">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold text-gray-800">Dashboard</h2>
+                <button id="refresh-metrics" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all">
+                    <i class="fas fa-sync-alt"></i> Atualizar Métricas
+                </button>
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Revenue Card -->
+                <div class="metric-card bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-xl shadow-md border border-blue-200 fade-in">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-gray-700">Receita Total</h3>
+                        <div class="bg-blue-500 text-white p-3 rounded-lg">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
                     </div>
-                    <div class="flex items-end">
-                        <button id="upload-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-md transition-colors flex items-center">
-                            <i class="fas fa-chart-line mr-2"></i>Analisar Dados
-                        </button>
-                    </div>
+                    <p id="total-revenue" class="text-3xl font-bold text-blue-600 mt-4 counter">R$ 0,00</p>
+                    <p class="text-sm text-gray-500 mt-2">Valor total de vendas</p>
                 </div>
                 
-                <div id="upload-status" class="mt-4 hidden">
-                    <div class="flex items-center text-blue-600">
-                        <i class="fas fa-spinner fa-spin mr-2"></i>
-                        <span>Processando dados...</span>
+                <!-- Profit Card -->
+                <div class="metric-card bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-xl shadow-md border border-green-200 fade-in">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-gray-700">Lucro Total</h3>
+                        <div class="bg-green-500 text-white p-3 rounded-lg">
+                            <i class="fas fa-coins"></i>
+                        </div>
                     </div>
+                    <p id="total-profit" class="text-3xl font-bold text-green-600 mt-4 counter">R$ 0,00</p>
+                    <p class="text-sm text-gray-500 mt-2">Lucro líquido gerado</p>
+                </div>
+                
+                <!-- Margin Card -->
+                <div class="metric-card bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-xl shadow-md border border-purple-200 fade-in">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-gray-700">Margem Média</h3>
+                        <div class="bg-purple-500 text-white p-3 rounded-lg">
+                            <i class="fas fa-percentage"></i>
+                        </div>
+                    </div>
+                    <p id="avg-margin" class="text-3xl font-bold text-purple-600 mt-4 counter">0%</p>
+                    <p class="text-sm text-gray-500 mt-2">Média de margem de lucro</p>
+                </div>
+                
+                <!-- Top Product Card -->
+                <div class="metric-card bg-gradient-to-br from-orange-50 to-orange-100 p-6 rounded-xl shadow-md border border-orange-200 fade-in">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-gray-700">Produto Top</h3>
+                        <div class="bg-orange-500 text-white p-3 rounded-lg">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                    </div>
+                    <p id="top-product" class="text-3xl font-bold text-orange-600 mt-4">N/A</p>
+                    <p class="text-sm text-gray-500 mt-2">Produto mais lucrativo</p>
                 </div>
             </div>
         </section>
-
+        
+        <!-- Upload Section -->
+        <section id="upload-section" class="mb-8 bg-white p-6 rounded-xl shadow-md hidden">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Upload de Dados</h2>
+            <div class="mb-4">
+                <label for="csv-upload" class="block text-lg font-semibold mb-3 text-gray-800">Carregar Dados (CSV)</label>
+                <div class="flex items-center">
+                    <div class="flex-1 relative">
+                        <input type="file" id="csv-upload" accept=".csv" class="hidden">
+                        <label for="csv-upload" class="flex items-center justify-center w-full text-sm text-gray-700 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 p-6 transition-all">
+                            <div class="text-center">
+                                <i class="fas fa-cloud-upload-alt text-3xl text-blue-500 mb-2"></i>
+                                <p class="font-medium">Clique para selecionar ou arraste o arquivo CSV</p>
+                                <p class="text-xs text-gray-500 mt-1">Formato: CSV com colunas produto, preco, quantidade, custo</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                <div id="upload-status" class="mt-3 hidden">
+                    <div class="flex items-center text-green-600">
+                        <i class="fas fa-check-circle mr-2"></i>
+                        <span>Arquivo carregado com sucesso!</span>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-4">
+                <button id="upload-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-all">
+                    Processar Arquivo
+                </button>
+            </div>
+        </section>
+        
         <!-- Results Section -->
-        <section id="results-section" class="mb-10 hidden fade-in">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Lucro Escondido -->
-                <div class="bg-white p-6 rounded-xl shadow-md card-hover">
-                    <h2 class="text-2xl font-semibold mb-4 text-gray-800 flex items-center">
-                        <i class="fas fa-gem text-purple-600 mr-3"></i>Lucro Escondido
-                    </h2>
-                    <div class="bg-gray-50 p-4 rounded-lg">
+        <section id="results-section" class="hidden">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Resultados da Análise</h2>
+            
+            <!-- Charts Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <div class="bg-white p-6 rounded-xl shadow-md fade-in">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-800">Lucro Escondido</h2>
+                    <div class="h-64">
                         <canvas id="hidden-profit-chart"></canvas>
                     </div>
                 </div>
-                
-                <!-- Sugestões de Preços -->
-                <div class="bg-white p-6 rounded-xl shadow-md card-hover">
-                    <h2 class="text-2xl font-semibold mb-4 text-gray-800 flex items-center">
-                        <i class="fas fa-lightbulb text-yellow-500 mr-3"></i>Mentor de Preços
-                    </h2>
-                    <div class="bg-gray-50 p-4 rounded-lg">
+                <div class="bg-white p-6 rounded-xl shadow-md fade-in">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-800">Mentor de Preços</h2>
+                    <div class="h-64">
                         <canvas id="price-suggestions-chart"></canvas>
                     </div>
                 </div>
             </div>
         </section>
-
+        
         <!-- History Section -->
-        <section id="history-section" class="mb-10 fade-in">
-            <div class="bg-white p-6 rounded-xl shadow-md">
-                <h2 class="text-2xl font-semibold mb-4 text-gray-800 flex items-center">
-                    <i class="fas fa-history text-green-600 mr-3"></i>Histórico de Uploads
-                </h2>
-                <div id="history-table" class="overflow-x-auto">
-                    <div class="flex justify-center items-center py-10">
-                        <i class="fas fa-spinner fa-spin mr-2 text-blue-600"></i>
-                        <span>Carregando histórico...</span>
-                    </div>
-                </div>
-            </div>
+        <section id="history-section" class="mt-8 bg-white p-6 rounded-xl shadow-md fade-in hidden">
+            <h2 class="text-xl font-semibold mb-4 text-gray-800">Histórico de Uploads</h2>
+            <div id="history-table" class="overflow-x-auto"></div>
         </section>
     </main>
-
-    <footer class="bg-gray-800 text-white p-6 mt-auto">
-        <div class="max-w-7xl mx-auto text-center">
-            <p>Preço Lucrativo com IA - Desenvolvido para pequenos varejistas e prestadores de serviços</p>
-            <p class="text-gray-400 text-sm mt-2">© 2025 LucroIA</p>
+    
+    <footer class="bg-gray-800 text-white p-6 mt-12">
+        <div class="max-w-6xl mx-auto text-center">
+            <p>© 2025 Preço Lucrativo com IA - Otimize seus preços e maximize seus lucros</p>
         </div>
     </footer>
-
+    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="script.js"></script>
 </body>
