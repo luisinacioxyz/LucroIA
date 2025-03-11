@@ -109,3 +109,21 @@ def get_metrics():
         "profit_by_product": profit_by_product,
         "top_3_products": top_3_products
     }
+@app.get("/ai-summary/")
+def get_ai_summary():
+    session = Session()
+    sales = session.query(Sale).all()
+    if not sales:
+        session.close()
+        return {"summary": "Nenhum dado disponível para análise."}
+    df = pd.DataFrame([{"produto": s.produto, "preco": s.preco, "quantidade": s.quantidade, "custo": s.custo} for s in sales])
+    df["lucro"] = (df["preco"] - df["custo"]) * df["quantidade"]
+    session.close()
+    
+    total_revenue = (df["preco"] * df["quantidade"]).sum()
+    total_profit = df["lucro"].sum()
+    top_product = df.loc[df["lucro"].idxmax()]["produto"] if not df.empty else "N/A"
+    summary = f"Sua receita total é R${total_revenue:.2f}, com lucro de R${total_profit:.2f}. O produto mais lucrativo é '{top_product}'. "
+    if total_profit < total_revenue * 0.2:
+        summary += "Sua margem está baixa; considere ajustar preços ou reduzir custos."
+    return {"summary": summary}

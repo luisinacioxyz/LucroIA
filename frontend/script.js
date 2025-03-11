@@ -128,6 +128,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Atualizar métricas após upload bem-sucedido
                 loadMetrics();
+                loadAISummary();
                 
                 showNotification('Análise concluída com sucesso!', 'success');
             })
@@ -670,9 +671,49 @@ async function loadMetrics() {
         console.error("Erro ao carregar métricas:", error);
     }
 }
+async function loadAISummary() {
+    try {
+        const response = await fetch("http://127.0.0.1:8000/ai-summary/");
+        const data = await response.json();
+        document.getElementById("ai-summary").textContent = data.summary;
+    } catch (error) {
+        console.error("Erro ao carregar resumo IA:", error);
+        document.getElementById("ai-summary").textContent = "Erro ao carregar análise.";
+    }
+}
 
+const chatInput = document.getElementById("chat-input");
+const chatSend = document.getElementById("chat-send");
+const chatContainer = document.getElementById("chat-container");
+
+if (chatSend && chatInput && chatContainer) {
+    chatSend.addEventListener("click", async () => {
+        const message = chatInput.value.trim();
+        if (!message) return;
+
+        chatContainer.innerHTML += `
+            <div class="text-right mb-2">
+                <span class="inline-block bg-blue-100 p-2 rounded">${message}</span>
+            </div>
+        `;
+        chatInput.value = "";
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+
+        const metrics = await (await fetch("http://127.0.0.1:8000/metrics/")).json();
+        const response = metrics.error 
+            ? "Não há dados para analisar ainda. Faça upload de um CSV primeiro."
+            : `Com base nos dados, sua receita é R$${metrics.total_revenue}. Sobre o que quer discutir?`;
+        chatContainer.innerHTML += `
+            <div class="text-left mb-2">
+                <span class="inline-block bg-gray-100 p-2 rounded">${response}</span>
+            </div>
+        `;
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    });
+}
 // Carregar métricas e histórico ao iniciar
 document.addEventListener("DOMContentLoaded", () => {
     loadMetrics();
     loadHistory();
+    loadAISummary();
 }); 
