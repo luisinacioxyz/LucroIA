@@ -137,15 +137,33 @@
                     <p class="text-sm text-gray-500 mt-2">Produto mais lucrativo</p>
                 </div>
             </div>
-            <div class="bg-white p-6 rounded-lg shadow mb-8">
-                <h3 class="text-lg font-semibold mb-2">Resumo da Análise (IA)</h3>
-                <p id="ai-summary" class="text-gray-700">Carregando análise...</p>
+            <div class="bg-gradient-to-br from-indigo-50 to-blue-50 p-7 rounded-xl shadow-md mt-10 mb-8 border-l-4 border-indigo-500 transform transition-all hover:shadow-lg">
+                <h3 class="text-lg font-semibold mb-3 flex items-center text-indigo-800">
+                    <i class="fas fa-robot mr-3 text-indigo-600 text-xl"></i> Resumo da Análise (IA)
+                </h3>
+                <div class="bg-white bg-opacity-70 p-4 rounded-lg">
+                    <p id="ai-summary" class="text-gray-700 leading-relaxed italic">Carregando análise...</p>
+                </div>
             </div>
-            <div class="bg-white p-6 rounded-lg shadow mb-8">
-                <h3 class="text-lg font-semibold mb-2">Chat com Gerente Comercial</h3>
-                <div id="chat-container" class="h-64 overflow-y-auto mb-4 p-2 border rounded"></div>
-                <input id="chat-input" type="text" placeholder="Pergunte algo sobre seus dados..." class="w-full p-2 border rounded">
-                <button id="chat-send" class="mt-2 bg-blue-600 text-white p-2 rounded hover:bg-blue-700">Enviar</button>
+            <div class="bg-gradient-to-tr from-gray-50 to-blue-50 p-7 rounded-xl shadow-md mb-8 border border-blue-200 transform transition-all hover:shadow-lg">
+                <h3 class="text-lg font-semibold mb-4 flex items-center text-blue-800">
+                    <i class="fas fa-comments mr-3 text-blue-600 text-xl"></i> Chat com Gerente Comercial
+                </h3>
+                
+                <div id="chat-container" class="h-72 overflow-y-auto mb-5 p-4 bg-white rounded-lg border border-gray-100 shadow-inner">
+                    <!-- Mensagens aparecerão aqui -->
+                </div>
+                
+                <div class="flex items-center gap-3 mt-4">
+                    <div class="relative flex-1">
+                        <input id="chat-input" type="text" placeholder="Pergunte algo sobre seus dados..." 
+                            class="w-full p-3 pl-4 pr-10 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all" />
+                        <i class="fas fa-lightbulb absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                    <button id="chat-send" class="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-5 py-3 rounded-full hover:from-blue-600 hover:to-indigo-700 transition-all flex items-center shadow-md">
+                        <i class="fas fa-paper-plane mr-2"></i> Enviar
+                    </button>
+                </div>
             </div>
         </section>
         
