@@ -103,7 +103,28 @@
                     <p id="avg-margin" class="text-3xl font-bold text-purple-600 mt-4 counter">0%</p>
                     <p class="text-sm text-gray-500 mt-2">Média de margem de lucro</p>
                 </div>
-                
+                <!-- Ticket Card -->
+                <div class="metric-card bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-xl shadow-md border border-purple-200 fade-in">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-gray-700">Ticket Médio</h3>
+                        <div class="bg-purple-500 text-white p-3 rounded-lg">
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                    </div>
+                    <p id="avg-ticket" class="text-3xl font-bold text-purple-600 mt-4 counter">R$ 0,00</p>
+                    <p class="text-sm text-gray-500 mt-2">Média de valor de vendas</p>
+                </div>
+                <!-- Products Card -->
+                <div class="metric-card bg-gradient-to-br from-orange-50 to-orange-100 p-6 rounded-xl shadow-md border border-orange-200 fade-in">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-gray-700">Produtos Únicos</h3>
+                        <div class="bg-orange-500 text-white p-3 rounded-lg">
+                            <i class="fas fa-box"></i>
+                        </div>
+                    </div>
+                    <p id="num-products" class="text-3xl font-bold text-orange-600 mt-4">0</p>
+                    <p class="text-sm text-gray-500 mt-2">Quantidade de produtos</p>
+                </div>
                 <!-- Top Product Card -->
                 <div class="metric-card bg-gradient-to-br from-orange-50 to-orange-100 p-6 rounded-xl shadow-md border border-orange-200 fade-in">
                     <div class="flex items-center justify-between">
@@ -115,6 +136,16 @@
                     <p id="top-product" class="text-3xl font-bold text-orange-600 mt-4">N/A</p>
                     <p class="text-sm text-gray-500 mt-2">Produto mais lucrativo</p>
                 </div>
+            </div>
+            <div class="bg-white p-4 rounded-lg shadow mb-6">
+                <h3 class="text-lg font-semibold mb-2">Resumo da Análise (IA)</h3>
+                <p id="ai-summary" class="text-gray-700">Carregando análise...</p>
+            </div>
+            <div class="bg-white p-4 rounded-lg shadow">
+                <h3 class="text-lg font-semibold mb-2">Chat com Gerente Comercial</h3>
+                <div id="chat-container" class="h-64 overflow-y-auto mb-4 p-2 border rounded"></div>
+                <input id="chat-input" type="text" placeholder="Pergunte algo sobre seus dados..." class="w-full p-2 border rounded">
+                <button id="chat-send" class="mt-2 bg-blue-600 text-white p-2 rounded hover:bg-blue-700">Enviar</button>
             </div>
         </section>
         

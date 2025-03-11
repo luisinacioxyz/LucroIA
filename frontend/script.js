@@ -577,7 +577,7 @@ const chartColors = {
 };
 
 // Função para animação de contagem
-function animateCounter(element, targetValue, prefix = '', suffix = '', duration = 1500) {
+function animateCounter(element, targetValue, prefix = '', suffix = '', duration = 1000) {
     if (!element) return;
     
     const startValue = 0;
@@ -639,55 +639,33 @@ async function loadMetrics() {
         
         console.log("Métricas carregadas:", metrics);
 
-        // Verificar se os elementos existem antes de atualizar
         const totalRevenueElement = document.getElementById("total-revenue");
         const totalProfitElement = document.getElementById("total-profit");
         const avgMarginElement = document.getElementById("avg-margin");
         const topProductElement = document.getElementById("top-product");
-        
+        const avgTicketElement = document.getElementById("avg-ticket");
+        const numProductsElement = document.getElementById("num-products");
+
         if (metrics.error) {
             if (totalRevenueElement) totalRevenueElement.textContent = "R$ 0,00";
             if (totalProfitElement) totalProfitElement.textContent = "R$ 0,00";
             if (avgMarginElement) avgMarginElement.textContent = "0%";
             if (topProductElement) topProductElement.textContent = "N/A";
+            if (avgTicketElement) avgTicketElement.textContent = "R$ 0,00";
+            if (numProductsElement) numProductsElement.textContent = "0";
             return;
         }
 
-        // Animar contadores se os elementos existirem
-        if (totalRevenueElement) {
-            animateCounter(
-                totalRevenueElement, 
-                metrics.total_revenue, 
-                'R$ '
-            );
-        }
-        
-        if (totalProfitElement) {
-            animateCounter(
-                totalProfitElement, 
-                metrics.total_profit, 
-                'R$ '
-            );
-        }
-        
-        if (avgMarginElement) {
-            animateCounter(
-                avgMarginElement, 
-                metrics.average_margin, 
-                '', 
-                '%'
-            );
-        }
-        
-        // Atualizar produto top com efeito de pulse
+        if (totalRevenueElement) animateCounter(totalRevenueElement, metrics.total_revenue, 'R$ ');
+        if (totalProfitElement) animateCounter(totalProfitElement, metrics.total_profit, 'R$ ');
+        if (avgMarginElement) animateCounter(avgMarginElement, metrics.average_margin, '', '%');
         if (topProductElement) {
             topProductElement.textContent = metrics.top_product;
             topProductElement.classList.add('pulse');
-            setTimeout(() => {
-                topProductElement.classList.remove('pulse');
-            }, 2000);
+            setTimeout(() => topProductElement.classList.remove('pulse'), 2000);
         }
-        
+        if (avgTicketElement) animateCounter(avgTicketElement, metrics.average_ticket, 'R$ ');
+        if (numProductsElement) animateCounter(numProductsElement, Math.floor(metrics.num_products), '', '');
     } catch (error) {
         console.error("Erro ao carregar métricas:", error);
     }
