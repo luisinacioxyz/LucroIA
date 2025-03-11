@@ -1,0 +1,367 @@
+Atenção: Este é um prompt altamente específico. Siga cada instrução exatamente como descrita, sem improvisar, pular detalhes ou adicionar funcionalidades além das especificadas. Cada passo é discreto, e você deve parar para feedback antes de avançar ao próximo. Assuma que o usuário sabe o que está fazendo e que há razões para cada requisito. O projeto começa do zero, sem código ou estrutura pré-existente.
+
+Contexto do Projeto
+Você está desenvolvendo o MVP de um produto chamado "Preço Lucrativo com IA", voltado para pequenos varejistas e prestadores de serviços (ex.: lojas de roupas, cafeterias, oficinas) com faturamento entre R$ 100 mil e R$ 1 milhão/ano. O MVP tem dois módulos principais:
+
+Lucro Escondido: Analisa dados internos (vendas, custos) para encontrar oportunidades de lucro subaproveitadas (ex.: produtos de alta margem com baixa venda).
+Mentor de Preços: Sugere preços otimizados com base em dados internos e benchmarks externos (ex.: preços de concorrentes).
+A equipe é composta por:
+
+1 desenvolvedor (você, o LLM, executando este prompt).
+2 consultores (coletando dados e validando com clientes).
+O projeto começa do zero, sem front-end ou back-end prontos. O objetivo é criar um MVP funcional em 8 semanas, hospedado localmente para testes iniciais.
+
+Problema Específico
+O usuário precisa de um MVP completo construído do zero, com:
+
+Back-end para importar e processar dados.
+Front-end básico para exibir resultados.
+Análise de "Lucro Escondido" e "Mentor de Preços" usando IA simples.
+Uma linha do tempo detalhada com passos discretos, ferramentas específicas e ordem de desenvolvimento.
+Proposta Geral
+Você construirá o MVP em 7 passos discretos, cada um com código inicial, ferramentas específicas e uma duração definida. Após cada passo, você parará para feedback do usuário antes de prosseguir. O desenvolvimento usará Python (FastAPI para back-end, Pandas para análise, BeautifulSoup para scraping) e HTML/CSS/JS com Chart.js para o front-end. O foco inicial será no back-end e na análise, com o front-end vindo depois.
+
+Linha do Tempo e Passos Detalhados
+Passo 1: Configuração do Ambiente e Estrutura do Projeto
+Duração: 3 dias (Semana 1, Dias 1-3).
+Objetivo: Criar a estrutura básica do projeto com pastas e dependências instaladas.
+Ferramentas:
+Python 3.11 (instale via python.org).
+FastAPI (instale via pip install fastapi uvicorn).
+Pandas (instale via pip install pandas).
+BeautifulSoup (instale via pip install beautifulsoup4 requests).
+VS Code como IDE.
+Git (instale e use git init para versionamento local).
+Instruções Específicas:
+Crie uma pasta chamada preco-lucrativo-mvp.
+Dentro dela, crie subpastas: backend, frontend, docs.
+No backend, crie um arquivo main.py com:
+python
+
+Recolher
+
+Encapsular
+
+Copiar
+from fastapi import FastAPI
+
+app = FastAPI()
+
+@app.get("/")
+def read_root():
+    return {"message": "Preço Lucrativo com IA - MVP"}
+Teste o servidor:
+Execute uvicorn main:app --reload no terminal, dentro da pasta backend.
+Abra http://127.0.0.1:8000 no navegador e confirme que a mensagem aparece.
+No frontend, crie um arquivo index.html vazio por enquanto.
+No docs, crie um README.md com: "MVP do Preço Lucrativo com IA - Início em Março 2025".
+Faça o commit inicial: git add . && git commit -m "Estrutura inicial do projeto".
+Entregável: Projeto estruturado com servidor FastAPI rodando e dependências instaladas.
+Parada para Feedback: Mostre a estrutura de pastas, o servidor rodando e o commit inicial ao usuário. Aguarde aprovação antes de avançar.
+Passo 2: Back-end - Importação de Dados
+Duração: 5 dias (Semana 1, Dia 4 - Semana 2, Dia 3).
+Objetivo: Criar um endpoint para importar planilhas CSV com dados de vendas e custos.
+Ferramentas:
+FastAPI (já instalado).
+Pandas (já instalado).
+Instruções Específicas:
+No backend, crie um arquivo data_handler.py com:
+python
+
+Recolher
+
+Encapsular
+
+Copiar
+import pandas as pd
+from fastapi import UploadFile
+
+def process_csv(file: UploadFile):
+    df = pd.read_csv(file.file)
+    # Garanta que as colunas esperadas existam
+    required_columns = ["produto", "preco", "quantidade", "custo"]
+    if not all(col in df.columns for col in required_columns):
+        raise ValueError("CSV deve conter: produto, preco, quantidade, custo")
+    return df.to_dict(orient="records")
+Atualize main.py:
+python
+
+Recolher
+
+Encapsular
+
+Copiar
+from fastapi import FastAPI, UploadFile, File
+from data_handler import process_csv
+
+app = FastAPI()
+
+@app.get("/")
+def read_root():
+    return {"message": "Preço Lucrativo com IA - MVP"}
+
+@app.post("/upload-csv/")
+async def upload_csv(file: UploadFile = File(...)):
+    try:
+        data = process_csv(file)
+        return {"data": data}
+    except ValueError as e:
+        return {"error": str(e)}
+Teste o endpoint:
+Crie um CSV chamado test.csv com:
+text
+
+Recolher
+
+Encapsular
+
+Copiar
+produto,preco,quantidade,custo
+Camisa,50,10,30
+Calça,80,5,50
+Use Postman ou curl para enviar o arquivo a http://127.0.0.1:8000/upload-csv/.
+Confirme que o JSON com os dados é retornado (ou erro, se o CSV estiver errado).
+Faça commit: git add . && git commit -m "Endpoint de upload de CSV implementado".
+Entregável: Endpoint funcional que importa CSV e retorna dados em JSON.
+Parada para Feedback: Envie o código, o CSV de teste e o resultado do endpoint ao usuário. Aguarde aprovação.
+Passo 3: Back-end - Análise de Lucro Escondido
+Duração: 7 dias (Semana 2, Dia 4 - Semana 3, Dia 5).
+Objetivo: Implementar a lógica de "Lucro Escondido" para identificar oportunidades nos dados.
+Ferramentas:
+Pandas (já instalado).
+Instruções Específicas:
+No backend, crie um arquivo profit_analyzer.py com:
+python
+
+Recolher
+
+Encapsular
+
+Copiar
+import pandas as pd
+
+def analyze_hidden_profit(df):
+    df["lucro"] = (df["preco"] * df["quantidade"]) - (df["custo"] * df["quantidade"])
+    df["margem"] = df["lucro"] / (df["preco"] * df["quantidade"]) * 100
+    total_vendas = (df["preco"] * df["quantidade"]).sum()
+    hidden_profit = df[(df["margem"] > 30) & ((df["preco"] * df["quantidade"]) / total_vendas < 0.1)]
+    return hidden_profit.to_dict(orient="records")
+Atualize main.py:
+python
+
+Recolher
+
+Encapsular
+
+Copiar
+from fastapi import FastAPI, UploadFile, File
+from data_handler import process_csv
+from profit_analyzer import analyze_hidden_profit
+
+app = FastAPI()
+
+@app.get("/")
+def read_root():
+    return {"message": "Preço Lucrativo com IA - MVP"}
+
+@app.post("/upload-csv/")
+async def upload_csv(file: UploadFile = File(...)):
+    try:
+        data = process_csv(file)
+        df = pd.DataFrame(data)
+        hidden_profit = analyze_hidden_profit(df)
+        return {"hidden_profit": hidden_profit}
+    except ValueError as e:
+        return {"error": str(e)}
+Teste com test.csv:
+Adicione uma linha de alta margem/baixa venda: Cinto,100,2,40.
+Envie o CSV e confirme que apenas "Cinto" aparece como lucro escondido (margem > 30%, vendas < 10% do total).
+Faça commit: git add . && git commit -m "Análise de lucro escondido implementada".
+Entregável: Endpoint que retorna produtos de lucro escondido em JSON.
+Parada para Feedback: Envie o código, o CSV atualizado e o resultado ao usuário. Aguarde.
+Passo 4: Back-end - Mentor de Preços (Básico)
+Duração: 7 dias (Semana 4, Dias 1-5; Semana 5, Dia 1-2).
+Objetivo: Adicionar sugestões de preços com base em dados internos e concorrentes manuais.
+Ferramentas:
+BeautifulSoup (já instalado).
+Instruções Específicas:
+No backend, crie price_mentor.py:
+python
+
+Recolher
+
+Encapsular
+
+Copiar
+import pandas as pd
+
+def suggest_prices(df, competitor_prices):
+    df["lucro_atual"] = (df["preco"] * df["quantidade"]) - (df["custo"] * df["quantidade"])
+    suggestions = []
+    for _, row in df.iterrows():
+        comp_price = competitor_prices.get(row["produto"], row["preco"] * 1.2)  # 20% acima se sem concorrente
+        new_price = min(comp_price, row["preco"] * 1.15) if row["lucro_atual"] < 0.1 * row["preco"] else row["preco"]
+        suggestions.append({"produto": row["produto"], "preco_atual": row["preco"], "preco_sugerido": new_price})
+    return suggestions
+Atualize main.py:
+python
+
+Recolher
+
+Encapsular
+
+Copiar
+from fastapi import FastAPI, UploadFile, File
+from data_handler import process_csv
+from profit_analyzer import analyze_hidden_profit
+from price_mentor import suggest_prices
+
+app = FastAPI()
+
+@app.get("/")
+def read_root():
+    return {"message": "Preço Lucrativo com IA - MVP"}
+
+@app.post("/upload-csv/")
+async def upload_csv(file: UploadFile = File(...)):
+    try:
+        data = process_csv(file)
+        df = pd.DataFrame(data)
+        hidden_profit = analyze_hidden_profit(df)
+        competitor_prices = {"Camisa": 60, "Calça": 80, "Cinto": 120}  # Dados manuais para teste
+        price_suggestions = suggest_prices(df, competitor_prices)
+        return {"hidden_profit": hidden_profit, "price_suggestions": price_suggestions}
+    except ValueError as e:
+        return {"error": str(e)}
+Teste com test.csv e confirme que as sugestões aparecem no JSON.
+Faça commit: git add . && git commit -m "Mentor de preços básico implementado".
+Entregável: Endpoint com ambos os módulos funcionando.
+Parada para Feedback: Envie o código e o JSON resultante ao usuário. Aguarde.
+Passo 5: Front-end - Estrutura Básica
+Duração: 5 dias (Semana 5, Dias 3-5; Semana 6, Dias 1-2).
+Objetivo: Criar um front-end básico para interagir com o back-end.
+Ferramentas:
+HTML/CSS/JS.
+Chart.js (instale via CDN: <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>).
+Instruções Específicas:
+No frontend, edite index.html:
+html
+
+Pré-visualizar
+
+Recolher
+
+Encapsular
+
+Copiar
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Preço Lucrativo com IA</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        canvas { max-width: 600px; margin: 20px auto; }
+    </style>
+</head>
+<body>
+    <h1>Preço Lucrativo com IA</h1>
+    <input type="file" id="csv-upload" accept=".csv">
+    <canvas id="hidden-profit-chart"></canvas>
+    <canvas id="price-suggestions-chart"></canvas>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
+Crie script.js:
+javascript
+
+Recolher
+
+Encapsular
+
+Copiar
+console.log("Front-end carregado. Aguardando lógica de upload.");
+Teste abrindo index.html no navegador e confirme que a página aparece sem erros.
+Faça commit: git add . && git commit -m "Estrutura básica do front-end".
+Entregável: Página HTML básica com input e canvases.
+Parada para Feedback: Mostre a página funcionando ao usuário. Aguarde.
+Passo 6: Front-end - Integração com Back-end
+Duração: 7 dias (Semana 6, Dias 3-5; Semana 7, Dias 1-4).
+Objetivo: Conectar o front-end ao back-end e exibir os resultados.
+Instruções Específicas:
+Atualize script.js:
+javascript
+
+Recolher
+
+Encapsular
+
+Copiar
+document.getElementById("csv-upload").addEventListener("change", async (event) => {
+    const file = event.target.files[0];
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await fetch("http://127.0.0.1:8000/upload-csv/", {
+        method: "POST",
+        body: formData
+    });
+    const result = await response.json();
+
+    if (result.error) {
+        alert(result.error);
+        return;
+    }
+
+    const profitLabels = result.hidden_profit.map(item => item.produto);
+    const margins = result.hidden_profit.map(item => item.margem);
+    const priceLabels = result.price_suggestions.map(item => item.produto);
+    const prices = result.price_suggestions.map(item => item.preco_sugerido);
+
+    const profitCtx = document.getElementById("hidden-profit-chart").getContext("2d");
+    new Chart(profitCtx, {
+        type: "bar",
+        data: {
+            labels: profitLabels,
+            datasets: [{ label: "Margem (%)", data: margins, backgroundColor: "rgba(75, 192, 192, 0.2)" }]
+        }
+    });
+
+    const priceCtx = document.getElementById("price-suggestions-chart").getContext("2d");
+    new Chart(priceCtx, {
+        type: "bar",
+        data: {
+            labels: priceLabels,
+            datasets: [{ label: "Preço Sugerido (R$)", data: prices, backgroundColor: "rgba(255, 99, 132, 0.2)" }]
+        }
+    });
+});
+Teste:
+Inicie o back-end (uvicorn main:app --reload).
+Abra index.html no navegador, faça upload de test.csv e confirme que os gráficos aparecem.
+Faça commit: git add . && git commit -m "Front-end integrado com back-end".
+Entregável: Front-end exibindo gráficos de "Lucro Escondido" e "Mentor de Preços".
+Parada para Feedback: Mostre o MVP funcionando ao usuário. Aguarde.
+Passo 7: Testes Finais e Documentação
+Duração: 5 dias (Semana 7, Dia 5; Semana 8, Dias 1-4).
+Objetivo: Validar o MVP e documentar o uso.
+Instruções Específicas:
+Crie 3 CSVs de teste variados (ex.: mais produtos, margens diferentes).
+Teste o fluxo completo (upload → análise → gráficos) com cada CSV.
+No docs, crie USO.md com:
+text
+
+Recolher
+
+Encapsular
+
+Copiar
+# Como Usar o Preço Lucrativo com IA
+1. Inicie o back-end: `cd backend && uvicorn main:app --reload`
+2. Abra `frontend/index.html` no navegador.
+3. Faça upload de um CSV com colunas: produto, preco, quantidade, custo.
+4. Veja os gráficos de Lucro Escondido e Preços Sugeridos.
+Faça commit: git add . && git commit -m "Testes finais e documentação".
+Entregável: MVP testado e documentado.
+Parada para Feedback: Envie os CSVs, resultados e o USO.md ao usuário. Aguarde.

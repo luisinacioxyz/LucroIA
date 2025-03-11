@@ -85,18 +85,27 @@ def get_metrics():
     } for s in sales])
     session.close()
 
-    # Cálculos das métricas
-    df["lucro"] = (df["preco"] * df["quantidade"]) - (df["custo"] * df["quantidade"])
+    df["lucro"] = (df["preco"] - df["custo"]) * df["quantidade"]
     df["margem"] = df["lucro"] / (df["preco"] * df["quantidade"]) * 100
 
     total_revenue = (df["preco"] * df["quantidade"]).sum()
     total_profit = df["lucro"].sum()
     avg_margin = df["margem"].mean()
     top_product = df.loc[df["lucro"].idxmax()]["produto"] if not df.empty else "N/A"
+    total_quantity = df["quantidade"].sum()
+    avg_ticket = total_revenue / total_quantity if total_quantity > 0 else 0
+    num_products = df["produto"].nunique()
+    profit_by_product = df.groupby("produto")["lucro"].sum().to_dict()
+    top_3_products = df.groupby("produto")["lucro"].sum().nlargest(3).to_dict()
 
     return {
         "total_revenue": round(total_revenue, 2),
         "total_profit": round(total_profit, 2),
         "average_margin": round(avg_margin, 2),
-        "top_product": top_product
-    } 
+        "top_product": top_product,
+        "average_ticket": round(avg_ticket, 2),
+        "total_quantity": int(total_quantity),
+        "num_products": int(num_products),
+        "profit_by_product": profit_by_product,
+        "top_3_products": top_3_products
+    }

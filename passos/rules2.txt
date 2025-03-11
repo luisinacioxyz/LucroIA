@@ -148,13 +148,7 @@ Instruções Específicas com Exemplo Inicial:
 No frontend, edite index.html:
 html
 
-Pré-visualizar
 
-Recolher
-
-Encapsular
-
-Copiar
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -199,11 +193,7 @@ Copiar
 Edite script.js:
 javascript
 
-Recolher
 
-Encapsular
-
-Copiar
 document.getElementById("csv-upload").addEventListener("change", async (event) => {
     const file = event.target.files[0];
     const formData = new FormData();

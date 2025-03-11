@@ -1,0 +1,313 @@
+Atenção: Siga cada instrução exatamente como descrita para o back-end, sem improvisar. Para o front-end, você tem liberdade criativa dentro das diretrizes fornecidas — explore ideias modernas e intuitivas, mas respeite os limites estabelecidos. Pare para feedback após cada passo. Todos os commits devem ser enviados ao repositório remoto https://github.com/luisinacioxyz/LucroIA.git.
+
+Contexto do Projeto
+O "Preço Lucrativo com IA" está funcional com:
+
+Back-end: FastAPI, SQLite (SQLAlchemy), endpoints /upload-csv/ e /history/, análises de "Lucro Escondido" e "Mentor de Preços".
+Front-end: Interface moderna (Tailwind CSS, Chart.js) com upload, gráficos e histórico.
+Git: Repositório em https://github.com/luisinacioxyz/LucroIA.
+Agora, você vai adicionar um dashboard com métricas (KPIs) para oferecer uma visão geral ao usuário, como lucro total, margem média e tendências de vendas.
+
+Passo 1: Criar o Endpoint /metrics/ no Back-end
+Duração: 5 dias (Semana 1, Dias 1-5).
+Objetivo: Implementar um endpoint que calcula métricas básicas a partir dos dados armazenados no SQLite.
+Ferramentas: FastAPI, SQLAlchemy, Pandas (já em uso).
+Instruções Específicas (Back-end):
+
+Atualize main.py para incluir o novo endpoint:
+python
+
+
+from fastapi import FastAPI, UploadFile, File
+from data_handler import process_csv
+from profit_analyzer import analyze_hidden_profit
+from price_mentor import suggest_prices
+from database import Session, Sale
+import pandas as pd
+
+app = FastAPI()
+
+@app.get("/")
+def read_root():
+    return {"message": "Preço Lucrativo com IA - MVP"}
+
+@app.post("/upload-csv/")
+async def upload_csv(file: UploadFile = File(...)):
+    try:
+        data = process_csv(file)
+        df = pd.DataFrame(data)
+        hidden_profit = analyze_hidden_profit(df)
+        competitor_prices = {"Camisa": 60, "Calça": 80, "Cinto": 120}
+        price_suggestions = suggest_prices(df, competitor_prices)
+        return {"hidden_profit": hidden_profit, "price_suggestions": price_suggestions}
+    except ValueError as e:
+        return {"error": str(e)}
+
+@app.get("/history/")
+def get_history():
+    session = Session()
+    sales = session.query(Sale).all()
+    session.close()
+    return [{"produto": s.produto, "preco": s.preco, "quantidade": s.quantidade, "custo": s.custo} for s in sales]
+
+@app.get("/metrics/")
+def get_metrics():
+    session = Session()
+    sales = session.query(Sale).all()
+    if not sales:
+        session.close()
+        return {"error": "Nenhum dado disponível"}
+    
+    df = pd.DataFrame([{
+        "produto": s.produto,
+        "preco": s.preco,
+        "quantidade": s.quantidade,
+        "custo": s.custo
+    } for s in sales])
+    session.close()
+
+    # Cálculos das métricas
+    df["lucro"] = (df["preco"] * df["quantidade"]) - (df["custo"] * df["quantidade"])
+    df["margem"] = df["lucro"] / (df["preco"] * df["quantidade"]) * 100
+
+    total_revenue = (df["preco"] * df["quantidade"]).sum()
+    total_profit = df["lucro"].sum()
+    avg_margin = df["margem"].mean()
+    top_product = df.loc[df["lucro"].idxmax()]["produto"] if not df.empty else "N/A"
+
+    return {
+        "total_revenue": round(total_revenue, 2),
+        "total_profit": round(total_profit, 2),
+        "average_margin": round(avg_margin, 2),
+        "top_product": top_product
+    }
+Teste:
+Inicie o back-end: cd backend && uvicorn main:app --reload.
+Certifique-se de que há dados no banco (envie test1.csv via /upload-csv/ se necessário).
+Acesse http://127.0.0.1:8000/metrics/ no navegador ou Postman.
+Confirme que o JSON retornado contém:
+total_revenue: Soma de preco * quantidade.
+total_profit: Soma de (preco - custo) * quantidade.
+average_margin: Média das margens percentuais.
+top_product: Produto com maior lucro.
+Exemplo esperado (com dados de teste):
+json
+
+
+{
+    "total_revenue": 750.0,
+    "total_profit": 250.0,
+    "average_margin": 33.33,
+    "top_product": "Camisa"
+}
+Commit:
+git add . && git commit -m "Adicionar endpoint /metrics/ com KPIs básicos"
+git push origin main
+Entregável: Endpoint /metrics/ funcional retornando KPIs.
+Parada para Feedback: Envie o código atualizado, o JSON retornado de /metrics/, e o link do commit no GitHub.
+
+Passo 2: Adicionar Dashboard com Métricas no Front-end
+Duração: 5 dias (Semana 2, Dias 1-5).
+Objetivo: Criar uma seção de dashboard no front-end para exibir as métricas de forma moderna e intuitiva.
+Ferramentas: HTML, Tailwind CSS, JS, Chart.js (já em uso).
+Diretrizes com Liberdade Criativa:
+
+Objetivo Visual: Uma seção de dashboard que exiba KPIs (lucro total, receita total, margem média, produto top) de forma clara e atraente, integrada à interface existente.
+Requisitos Obrigatórios:
+Exibir os 4 KPIs do endpoint /metrics/ (receita total, lucro total, margem média, produto top).
+Manter responsividade e consistência com o design atual (Tailwind CSS).
+Atualizar automaticamente ao carregar a página e após cada upload de CSV.
+Liberdade Criativa:
+Escolha o formato: Cards, uma tabela pequena, ou até um mini-gráfico (ex.: gauge com Chart.js).
+Use cores distintas para cada métrica (ex.: verde para lucro, azul para receita).
+Adicione animações (ex.: contagem crescente nos números com JS).
+Considere um botão "Atualizar Métricas" ou um ícone de refresh.
+Instruções Específicas com Exemplo Inicial:
+
+Edite frontend/index.html:
+html
+
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preço Lucrativo com IA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .fade-in { animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans">
+    <header class="bg-blue-600 text-white p-4 text-center">
+        <h1 class="text-2xl font-bold">Preço Lucrativo com IA</h1>
+    </header>
+    <main class="max-w-5xl mx-auto p-4">
+        <section class="mb-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="bg-white p-4 rounded-lg shadow fade-in">
+                <h3 class="text-lg font-semibold text-gray-700">Receita Total</h3>
+                <p id="total-revenue" class="text-2xl font-bold text-blue-600">R$ 0,00</p>
+            </div>
+            <div class="bg-white p-4 rounded-lg shadow fade-in">
+                <h3 class="text-lg font-semibold text-gray-700">Lucro Total</h3>
+                <p id="total-profit" class="text-2xl font-bold text-green-600">R$ 0,00</p>
+            </div>
+            <div class="bg-white p-4 rounded-lg shadow fade-in">
+                <h3 class="text-lg font-semibold text-gray-700">Margem Média</h3>
+                <p id="avg-margin" class="text-2xl font-bold text-purple-600">0%</p>
+            </div>
+            <div class="bg-white p-4 rounded-lg shadow fade-in">
+                <h3 class="text-lg font-semibold text-gray-700">Produto Top</h3>
+                <p id="top-product" class="text-2xl font-bold text-orange-600">N/A</p>
+            </div>
+        </section>
+        <section class="mb-6">
+            <label for="csv-upload" class="block text-lg font-semibold mb-2">Carregar Dados (CSV)</label>
+            <input type="file" id="csv-upload" accept=".csv" class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none p-2">
+        </section>
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-white p-4 rounded-lg shadow fade-in">
+                <h2 class="text-xl font-semibold mb-2">Lucro Escondido</h2>
+                <canvas id="hidden-profit-chart"></canvas>
+            </div>
+            <div class="bg-white p-4 rounded-lg shadow fade-in">
+                <h2 class="text-xl font-semibold mb-2">Mentor de Preços</h2>
+                <canvas id="price-suggestions-chart"></canvas>
+            </div>
+        </section>
+        <section class="mt-6 bg-white p-4 rounded-lg shadow fade-in">
+            <h2 class="text-xl font-semibold mb-2">Histórico de Uploads</h2>
+            <div id="history-table" class="overflow-x-auto"></div>
+        </section>
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
+Edite frontend/script.js:
+javascript
+
+
+document.getElementById("csv-upload").addEventListener("change", async (event) => {
+    const file = event.target.files[0];
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await fetch("http://127.0.0.1:8000/upload-csv/", {
+        method: "POST",
+        body: formData
+    });
+    const result = await response.json();
+
+    if (result.error) {
+        alert(result.error);
+        return;
+    }
+
+    // Lucro Escondido
+    const profitLabels = result.hidden_profit.map(item => item.produto);
+    const margins = result.hidden_profit.map(item => item.margem);
+    const profitCtx = document.getElementById("hidden-profit-chart").getContext("2d");
+    new Chart(profitCtx, {
+        type: "bar",
+        data: {
+            labels: profitLabels,
+            datasets: [{ label: "Margem (%)", data: margins, backgroundColor: "rgba(34, 197, 94, 0.5)", borderColor: "rgba(34, 197, 94, 1)", borderWidth: 1 }]
+        },
+        options: { scales: { y: { beginAtZero: true } } }
+    });
+
+    // Mentor de Preços
+    const priceLabels = result.price_suggestions.map(item => item.produto);
+    const prices = result.price_suggestions.map(item => item.preco_sugerido);
+    const priceCtx = document.getElementById("price-suggestions-chart").getContext("2d");
+    new Chart(priceCtx, {
+        type: "bar",
+        data: {
+            labels: priceLabels,
+            datasets: [{ label: "Preço Sugerido (R$)", data: prices, backgroundColor: "rgba(59, 130, 246, 0.5)", borderColor: "rgba(59, 130, 246, 1)", borderWidth: 1 }]
+        },
+        options: { scales: { y: { beginAtZero: true } } }
+    });
+
+    // Atualizar métricas e histórico
+    loadMetrics();
+    loadHistory();
+});
+
+async function loadMetrics() {
+    const response = await fetch("http://127.0.0.1:8000/metrics/");
+    const metrics = await response.json();
+
+    if (metrics.error) {
+        document.getElementById("total-revenue").textContent = "R$ 0,00";
+        document.getElementById("total-profit").textContent = "R$ 0,00";
+        document.getElementById("avg-margin").textContent = "0%";
+        document.getElementById("top-product").textContent = "N/A";
+        return;
+    }
+
+    document.getElementById("total-revenue").textContent = `R$ ${metrics.total_revenue.toFixed(2)}`;
+    document.getElementById("total-profit").textContent = `R$ ${metrics.total_profit.toFixed(2)}`;
+    document.getElementById("avg-margin").textContent = `${metrics.average_margin.toFixed(2)}%`;
+    document.getElementById("top-product").textContent = metrics.top_product;
+}
+
+async function loadHistory() {
+    const response = await fetch("http://127.0.0.1:8000/history/");
+    const history = await response.json();
+    const tableDiv = document.getElementById("history-table");
+    tableDiv.innerHTML = `
+        <table class="min-w-full bg-white border">
+            <thead>
+                <tr class="bg-gray-200">
+                    <th class="py-2 px-4 border">Produto</th>
+                    <th class="py-2 px-4 border">Preço (R$)</th>
+                    <th class="py-2 px-4 border">Quantidade</th>
+                    <th class="py-2 px-4 border">Custo (R$)</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${history.map(item => `
+                    <tr class="hover:bg-gray-100">
+                        <td class="py-2 px-4 border">${item.produto}</td>
+                        <td class="py-2 px-4 border">${item.preco.toFixed(2)}</td>
+                        <td class="py-2 px-4 border">${item.quantidade}</td>
+                        <td class="py-2 px-4 border">${item.custo.toFixed(2)}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+}
+
+// Carregar métricas e histórico ao iniciar
+loadMetrics();
+loadHistory();
+Teste:
+Inicie o back-end: cd backend && uvicorn main:app --reload.
+Abra frontend/index.html no navegador.
+Confirme que os cards de métricas aparecem com valores reais (após upload de test1.csv, se necessário).
+Verifique responsividade redimensionando a janela.
+Commit:
+git add . && git commit -m "Adicionar dashboard com métricas no front-end"
+git push origin main
+Entregável: Front-end com seção de dashboard exibindo KPIs.
+Parada para Feedback: Envie o código atualizado, capturas de tela do dashboard, e o link do commit no GitHub.
+
+Linha do Tempo
+Semana 1: Passo 1 (5 dias).
+Semana 2: Passo 2 (5 dias).
+Total: 2 semanas (10 dias úteis, até fim de março 2025).
+Detalhes do Plano
+Métricas Implementadas:
+Receita Total: Soma de preço * quantidade de todos os registros.
+Lucro Total: Soma de (preço - custo) * quantidade.
+Margem Média: Média das margens percentuais (lucro / receita * 100).
+Produto Top: Produto com maior lucro absoluto.
+Sugestões Criativas para o Sub-LLM:
+Cards: Use gradientes (ex.: bg-gradient-to-r from-blue-500 to-blue-700) ou ícones (FontAwesome) para destacar cada KPI.
+Animações: Implemente uma contagem crescente nos números (ex.: com setInterval em JS).
+Tendências: Adicione uma linha opcional no dashboard mostrando lucro por upload (se quiser ir além).
