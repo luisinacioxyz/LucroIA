@@ -67,7 +67,17 @@ def get_history():
     session = Session()
     sales = session.query(Sale).all()
     session.close()
-    return [{"produto": s.produto, "preco": s.preco, "quantidade": s.quantidade, "custo": s.custo} for s in sales]
+    return [{
+        "id": s.id,
+        "produto": s.produto,
+        "preco": s.preco,
+        "quantidade": s.quantidade,
+        "custo": s.custo,
+        "data": s.data,
+        "id_produto": s.id_produto,
+        "id_compra": s.id_compra,
+        "id_cliente": s.id_cliente
+    } for s in sales]
 
 @app.get("/metrics/")
 def get_metrics():
@@ -81,22 +91,31 @@ def get_metrics():
         "produto": s.produto,
         "preco": s.preco,
         "quantidade": s.quantidade,
-        "custo": s.custo
+        "custo": s.custo,
+        "data": s.data,
+        "id_produto": s.id_produto,
+        "id_compra": s.id_compra,
+        "id_cliente": s.id_cliente
     } for s in sales])
     session.close()
 
     df["lucro"] = (df["preco"] - df["custo"]) * df["quantidade"]
     df["margem"] = df["lucro"] / (df["preco"] * df["quantidade"]) * 100
+    df["data"] = pd.to_datetime(df["data"], errors="coerce")
 
     total_revenue = (df["preco"] * df["quantidade"]).sum()
     total_profit = df["lucro"].sum()
     avg_margin = df["margem"].mean()
     top_product = df.loc[df["lucro"].idxmax()]["produto"] if not df.empty else "N/A"
     total_quantity = df["quantidade"].sum()
-    avg_ticket = total_revenue / total_quantity if total_quantity > 0 else 0
     num_products = df["produto"].nunique()
     profit_by_product = df.groupby("produto")["lucro"].sum().to_dict()
     top_3_products = df.groupby("produto")["lucro"].sum().nlargest(3).to_dict()
+    num_transactions = df["id_compra"].nunique()
+    num_clients = df["id_cliente"].nunique()
+    avg_ticket= total_revenue / num_clients if num_clients > 0 else 0
+    sales_by_month = df.groupby(df["data"].dt.to_period("M"))["lucro"].sum().to_dict()
+    top_product_by_quantity = df.groupby("id_produto")["quantidade"].sum().idxmax() if not df.empty else "N/A"
 
     return {
         "total_revenue": round(total_revenue, 2),
@@ -107,7 +126,11 @@ def get_metrics():
         "total_quantity": int(total_quantity),
         "num_products": int(num_products),
         "profit_by_product": profit_by_product,
-        "top_3_products": top_3_products
+        "top_3_products": top_3_products,
+        "num_transactions": num_transactions,
+        "num_clients": num_clients,
+        "sales_by_month": {str(k): round(v, 2) for k, v in sales_by_month.items()},
+        "top_product_by_quantity": top_product_by_quantity
     }
 @app.get("/ai-summary/")
 def get_ai_summary():

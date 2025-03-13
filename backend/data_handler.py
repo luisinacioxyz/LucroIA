@@ -15,7 +15,11 @@ def process_csv(file: UploadFile):
             produto=row["produto"],
             preco=row["preco"],
             quantidade=row["quantidade"],
-            custo=row["custo"]
+            custo=row["custo"],
+            data=row.get("data", "N/A"),  # Opcional, default "N/A"
+            id_produto=row.get("id_produto", "N/A"),  # Opcional
+            id_compra=row.get("id_compra", "N/A"),  # Opcional
+            id_cliente=row.get("id_cliente", "N/A")  # Opcional
         )
         session.add(sale)
     session.commit()
